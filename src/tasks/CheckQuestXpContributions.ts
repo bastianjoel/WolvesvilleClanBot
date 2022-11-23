@@ -8,14 +8,16 @@ export class CheckQuestXpContributions implements Task {
   constructor(private clanId: string) { }
 
   async run() {
-    const { data } = await axios.get<Quest>(`/clans/${this.clanId}/quests/active`);
-    const amountTiers = data.quest.rewards.length;
-    const xpPerTier = PARTICIPANT_XP_PER_QUEST / amountTiers;
-    const shouldHaveXp = xpPerTier * data.tier;
+    const { data } = await axios.get<Quest | null>(`/clans/${this.clanId}/quests/active`);
+    if (data) {
+      const amountTiers = data.quest.rewards.length;
+      const xpPerTier = PARTICIPANT_XP_PER_QUEST / amountTiers;
+      const shouldHaveXp = xpPerTier * data.tier;
 
-    for (const participant of data.participants) {
-      if (participant.xp < shouldHaveXp) {
-        await this.notifyPlayerNotEnoughtXp(participant);
+      for (const participant of data.participants) {
+        if (participant.xp < shouldHaveXp) {
+          await this.notifyPlayerNotEnoughtXp(participant);
+        }
       }
     }
   }
