@@ -9,7 +9,7 @@ export class CheckQuestXpContributions implements Task {
 
   async run() {
     const { data } = await axios.get<Quest | null>(`/clans/${this.clanId}/quests/active`);
-    if (data) {
+    if (data && Object.keys(data).length) {
       const amountTiers = data.quest.rewards.length;
       const xpPerTier = PARTICIPANT_XP_PER_QUEST / amountTiers;
       const shouldHaveXp = xpPerTier * data.tier;
@@ -23,10 +23,10 @@ export class CheckQuestXpContributions implements Task {
   }
 
   async notifyPlayerNotEnoughtXp(player: QuestParticipant) {
-    console.log(`[INFO] Send player not enough xp notification to ${player}`);
+    console.log(`[INFO] Send player not enough xp notification to ${player.username}`);
 
     await axios.post(`/clans/${this.clanId}/chat`, {
-      message: `${player} macht zu wenig Quest XP.`
+      message: `${player.username} macht zu wenig Quest XP.`
     });
   }
 }

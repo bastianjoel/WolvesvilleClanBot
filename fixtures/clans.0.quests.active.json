@@ -1,0 +1,65 @@
+{
+  "quest": {
+    "id": "8912e6fa-3ebd-446f-bc4d-ee808bf6dba6",
+    "rewards": [
+      {
+        "type": "AVATAR_ITEM",
+        "amount": 1,
+        "avatarItemId": "lWL",
+        "displayType": "NORMAL"
+      },
+      {
+        "type": "AVATAR_ITEM",
+        "amount": 1,
+        "avatarItemId": "6bJ",
+        "displayType": "NORMAL"
+      },
+      {
+        "type": "AVATAR_ITEM",
+        "amount": 1,
+        "avatarItemId": "VRo",
+        "displayType": "NORMAL"
+      },
+      {
+        "type": "AVATAR_ITEM",
+        "amount": 1,
+        "avatarItemId": "Qj5",
+        "displayType": "NORMAL"
+      },
+      {
+        "type": "AVATAR_ITEM",
+        "amount": 1,
+        "avatarItemId": "fVU",
+        "displayType": "NORMAL"
+      },
+      {
+        "type": "AVATAR_ITEM",
+        "amount": 1,
+        "avatarItemId": "cCg",
+        "displayType": "NORMAL"
+      }
+    ],
+    "promoImageUrl": "https://cdn.wolvesville.com/promos/zombro.jpg",
+    "promoImagePrimaryColor": "#4a8b95",
+    "purchasableWithGems": false
+  },
+  "xp": 2502,
+  "xpPerReward": 2500,
+  "tier": 1,
+  "tierStartTime": "2022-09-27T08:39:34.192Z",
+  "participants": [
+    {
+      "playerId": "e65896dc-02ff-43bc-a589-934ecd2ae171",
+      "username": "Maddoc",
+      "xp": 2400
+    },
+    {
+      "playerId": "e65896dc-02ff-43bc-a589-934ecd2ae171",
+      "username": "User 2",
+      "xp": 102
+    }
+  ],
+  "tierFinished": false,
+  "claimedTime": false,
+  "tierEndTime": "2022-09-28T08:39:34.192Z"
+}

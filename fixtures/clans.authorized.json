@@ -1,0 +1,18 @@
+[
+  {
+    "id": "71a3a9d3-4a38-431c-b90a-fa150cea41d4",
+    "creationTime": "2018-12-10T10:30:16.029Z",
+    "name": "Banana",
+    "description": "Hello!",
+    "xp": 2760,
+    "language": "GB",
+    "icon": "font-awesome-5:socks:solid",
+    "iconColor": "#AFB42B",
+    "tag": "B",
+    "joinType": "JOIN_BY_REQUEST",
+    "leaderId": "f2ac3c75-3a44-4db6-ac17-33fba14b1e00",
+    "questHistoryCount": 0,
+    "minLevel": 0,
+    "memberCount": 1
+  }
+]
