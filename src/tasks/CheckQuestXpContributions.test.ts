@@ -9,8 +9,9 @@ test('reports player with insufficient quest xp', async () => {
   mockedAxios.get.mockResolvedValueOnce({ data: questActiveResponse });
   mockedAxios.post.mockResolvedValueOnce(null);
   const checker = new CheckQuestXpContributions('0');
-  await checker.run();
+  const rerunTime = await checker.run();
 
+  expect(rerunTime.valueOf()).toBe(Date.parse("2022-09-28T09:39:34.192Z"))
   expect(mockedAxios.post).toHaveBeenCalledTimes(1);
   expect(mockedAxios.post).toHaveBeenCalledWith(`/clans/0/chat`, {
     message: `User 2 macht zu wenig Quest XP.`

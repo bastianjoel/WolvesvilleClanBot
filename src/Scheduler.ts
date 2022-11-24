@@ -1,20 +1,45 @@
 import axios from "axios";
+import { scheduleJob } from "node-schedule";
 import { Clan } from "./models/Clan";
+import { Task } from "./tasks/Task";
 import { CheckQuestXpContributions } from "./tasks/CheckQuestXpContributions";
 
 export class Scheduler {
   private clans: Clan[];
+  private started: boolean = false;
 
-  async loadClans() {
+  /**
+    * Updates the clans the scheduler will run for
+    */
+  public async loadClans() {
     this.clans = await axios.get(`/clans/authorized`);
   }
 
-  async start() {
+  /**
+    * Starts the scheduler with the currently loaded clans
+    *
+    * This procedure can only be called once.
+    * @throws if scheduler already started
+    */
+  public async start() {
+    if (this.started) {
+      throw new Error(`Scheduler already started`);
+    }
+
     for (const clan of this.clans) {
-      console.log(`[INFO] Running Tasks for Clan ${clan.name}`);
+      console.info(`[INFO] Running Tasks for Clan ${clan.name}`);
 
       const cqxc = new CheckQuestXpContributions(clan.id);
-      await cqxc.run();
+      await this.startScheduler(`CheckQuestXpContributions for ${clan.name}`, cqxc);
     }
+  }
+
+  private async startScheduler(name: string, task: Task) {
+    const nextRunAt = await task.run();
+    // TODO: Jobs should be persisted and continue when
+    //       the application is restarted
+    scheduleJob(name, nextRunAt, async () => {
+      this.startScheduler(name, task);
+    });
   }
 }
