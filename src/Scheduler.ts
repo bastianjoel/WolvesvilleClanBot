@@ -30,16 +30,16 @@ export class Scheduler {
       console.info(`[INFO] Running Tasks for Clan ${clan.name}`);
 
       const cqxc = new CheckQuestXpContributions(clan.id);
-      await this.startScheduler(`CheckQuestXpContributions for ${clan.name}`, cqxc);
+      await this.runTask(`CheckQuestXpContributions for ${clan.name}`, cqxc);
     }
   }
 
-  private async startScheduler(name: string, task: Task) {
+  private async runTask(name: string, task: Task) {
     const nextRunAt = await task.run();
     // TODO: Jobs should be persisted and continue when
     //       the application is restarted
     scheduleJob(name, nextRunAt, async () => {
-      this.startScheduler(name, task);
+      this.runTask(name, task);
     });
   }
 }
