@@ -1,4 +1,4 @@
-export interface Task {
+export abstract class Task {
   /**
     * Runs a task and returns its next execution
     * time or null if the task should not be
@@ -6,5 +6,5 @@ export interface Task {
     * Errors will be handled internally. When this
     * method throws the task should not be run again
     */
-  run(): Promise<Date | null>;
+  abstract run(): Promise<Date | null>;
 }

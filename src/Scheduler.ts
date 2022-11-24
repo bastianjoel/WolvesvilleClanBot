@@ -3,16 +3,49 @@ import { scheduleJob } from "node-schedule";
 import { Clan } from "./models/Clan";
 import { Task } from "./tasks/Task";
 import { CheckQuestXpContributions } from "./tasks/CheckQuestXpContributions";
+import { DataStore } from "./DataStore";
+
+const TASKS = {
+  CHECK_QUEST_XP_CONTRIBUTIONS: CheckQuestXpContributions
+};
+
+interface TaskCollectionItem {
+  identifier: string;
+  nextRun: number;
+}
+
+interface ClanData {
+  info: Clan;
+  tasks: TaskCollectionItem[] | null;
+  addedAt: number;
+}
 
 export class Scheduler {
-  private clans: Clan[];
+  private clans: { [key: string]: ClanData };
   private started: boolean = false;
 
   /**
     * Updates the clans the scheduler will run for
     */
   public async loadClans() {
-    this.clans = await axios.get(`/clans/authorized`);
+    const currentClans = DataStore.read<{ [key: string]: ClanData }>(`clans`);
+
+    const { data } = await axios.get<Clan[]>(`/clans/authorized`);
+    for (let clan of data) {
+      if (currentClans[clan.id]) {
+        currentClans[clan.id].info = clan;
+        this.clans[clan.id] = currentClans[clan.id];
+      } else {
+        this.clans[clan.id] = {
+          info: clan,
+          tasks: null,
+          addedAt: Date.now()
+        }
+      }
+    }
+
+    DataStore.update(`clans`, this.clans);
+    DataStore.write(`clans`);
   }
 
   /**
@@ -26,20 +59,38 @@ export class Scheduler {
       throw new Error(`Scheduler already started`);
     }
 
-    for (const clan of this.clans) {
-      console.info(`[INFO] Running Tasks for Clan ${clan.name}`);
+    this.started = true;
 
-      const cqxc = new CheckQuestXpContributions(clan.id);
-      await this.runTask(`CheckQuestXpContributions for ${clan.name}`, cqxc);
+    for (const clanId in this.clans) {
+      const clan = this.clans[clanId];
+      console.info(`[INFO] Running Tasks for Clan ${clan.info.name}`);
+
+      if (clan.tasks) {
+        for (const taskInfo of clan.tasks) {
+          const task = new TASKS[taskInfo.identifier](clanId);
+          if (taskInfo.nextRun > Date.now()) {
+            await this.runTask(clan, taskInfo.identifier, task, new Date(taskInfo.nextRun));
+          } else {
+            await this.runTask(clan, taskInfo.identifier, task);
+          }
+        }
+      } else {
+        for (const taskName in TASKS) {
+          const task = new TASKS[taskName](clanId);
+          await this.runTask(clan, taskName, task);
+        }
+      }
     }
   }
 
-  private async runTask(name: string, task: Task) {
-    const nextRunAt = await task.run();
+  private async runTask(clan: ClanData, name: string, task: Task, runAt?: Date) {
+    if (!runAt) {
+      runAt = await task.run();
+    }
     // TODO: Jobs should be persisted and continue when
     //       the application is restarted
-    scheduleJob(name, nextRunAt, async () => {
-      this.runTask(name, task);
+    scheduleJob(`${name} for ${clan.info.name}`, runAt, async () => {
+      this.runTask(clan, name, task);
     });
   }
 }
