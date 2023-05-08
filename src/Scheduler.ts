@@ -2,11 +2,11 @@ import axios from "axios";
 import { scheduleJob } from "node-schedule";
 import { Clan } from "./models/Clan";
 import { Task } from "./tasks/Task";
-import { CheckQuestXpContributions } from "./tasks/CheckQuestXpContributions";
 import { DataStore } from "./DataStore";
+import { SyncToDB } from "./tasks/SyncToDB";
 
-const TASKS = {
-  CHECK_QUEST_XP_CONTRIBUTIONS: CheckQuestXpContributions
+const TASKS: { [key: string]: any } = {
+  SYNC_TO_DB: SyncToDB,
 };
 
 interface TaskCollectionItem {
@@ -21,7 +21,7 @@ interface ClanData {
 }
 
 export class Scheduler {
-  private clans: { [key: string]: ClanData };
+  private clans: { [key: string]: ClanData } = {};
   private started: boolean = false;
 
   /**
@@ -67,11 +67,13 @@ export class Scheduler {
 
       if (clan.tasks) {
         for (const taskInfo of clan.tasks) {
-          const task = new TASKS[taskInfo.identifier](clanId);
-          if (taskInfo.nextRun > Date.now()) {
-            await this.runTask(clan, taskInfo.identifier, task, new Date(taskInfo.nextRun));
-          } else {
-            await this.runTask(clan, taskInfo.identifier, task);
+          if (TASKS[taskInfo.identifier]) {
+            const task = new TASKS[taskInfo.identifier](clanId);
+            if (taskInfo.nextRun > Date.now()) {
+              await this.runTask(clan, taskInfo.identifier, task, new Date(taskInfo.nextRun));
+            } else {
+              await this.runTask(clan, taskInfo.identifier, task);
+            }
           }
         }
       } else {
@@ -83,14 +85,18 @@ export class Scheduler {
     }
   }
 
-  private async runTask(clan: ClanData, name: string, task: Task, runAt?: Date) {
+  private async runTask(clan: ClanData, name: string, task: Task, runAt?: Date | null) {
     if (!runAt) {
+      console.info(`[INFO] Running task ${name} for ${clan.info.name}`);
       runAt = await task.run();
     }
+
     // TODO: Jobs should be persisted and continue when
     //       the application is restarted
-    scheduleJob(`${name} for ${clan.info.name}`, runAt, async () => {
-      this.runTask(clan, name, task);
-    });
+    if (runAt) {
+      scheduleJob(`${name} for ${clan.info.name}`, runAt, async () => {
+        this.runTask(clan, name, task);
+      });
+    }
   }
 }

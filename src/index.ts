@@ -9,7 +9,16 @@ axios.defaults.headers = {
   Authorization: `Bot ${process.env.API_KEY}`,
 } as any;
 
-const scheduler = new Scheduler();
-scheduler.loadClans().then(() => {
-  scheduler.start();
-});
+const argv = process.argv.slice(2);
+if (argv.length && argv[0] !== `scheduler`) {
+  if (argv[0] === `req`) {
+    axios.get(argv[1]).then(({ data }) => {
+      console.log(data);
+    });
+  }
+} else {
+  const scheduler = new Scheduler();
+  scheduler.loadClans().then(() => {
+    scheduler.start();
+  });
+}

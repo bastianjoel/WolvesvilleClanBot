@@ -1,0 +1,44 @@
+version: '3.8'
+services:
+  app:
+    container_name: app
+    restart: always
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile.dev
+    env_file: docker.env
+    depends_on:
+      - db
+    volumes:
+    - ../:/usr/src/app
+
+  db:
+    container_name: postgres
+    image: postgres
+    ports:
+      - "5433:5433"
+    volumes:
+      - data:/data/db
+      - ../src/migrations/dbinit.sql:/docker-entrypoint-initdb.d/dbinit.sql
+    env_file: docker.env
+    environment:
+      - POSTGRES_PASSWORD=wolvesville
+      - POSTGRES_DB=wolvesville
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4:7.1
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: pg@example.test
+      PGADMIN_DEFAULT_PASSWORD: secret
+      PGADMIN_LISTEN_PORT: 80
+    ports:
+      - "8080:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      - db
+
+volumes: 
+ data: {}
+ pgadmin-data: {}

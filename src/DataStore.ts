@@ -1,7 +1,20 @@
+import { Pool, PoolClient } from "pg";
 import * as fs from "fs";
 
 export class DataStore {
+  private static dbPool: Pool = new Pool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    database: process.env.DB_NAME,
+    password: process.env.DB_PASSWORD,
+    port: parseInt(process.env.DB_PORT || "5432")
+  });
+
   private static cache: Map<string, any> = new Map<string, any>;
+
+  public static async getDbConnection(): Promise<PoolClient> {
+    return await this.dbPool.connect();
+  }
 
   public static read<T>(store: string): T {
     if (!DataStore.cache.has(store)) {
