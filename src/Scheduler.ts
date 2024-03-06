@@ -21,7 +21,7 @@ interface ClanData {
 }
 
 export class Scheduler {
-  private clans: { [key: string]: ClanData };
+  private clans: { [key: string]: ClanData } = {};
   private started: boolean = false;
 
   /**
