@@ -2,8 +2,8 @@ import axios from "axios";
 import {
   AutocompleteInteraction,
   ChatInputCommandInteraction,
+  EmbedBuilder,
   SlashCommandBuilder,
-  bold,
 } from "discord.js";
 import { DataStore } from "../../../DataStore";
 import { Role } from "../../../models/Role";
@@ -18,13 +18,14 @@ export const data = new SlashCommandBuilder()
       .setDescription("Name of the role")
       .setRequired(true)
       .setAutocomplete(true),
-  )
-  .setDefaultMemberPermissions(0);
+  );
 
 async function getRoles(): Promise<Role[]> {
   let roleStore = DataStore.read<{ roles: Role[] }>(`wov-roles`);
   if (!roleStore?.roles) {
-    const { data } = await axios.get<{ roles: Role[] } | null>(`/roles`);
+    const { data } = await axios.get<{ roles: Role[] } | null>(
+      `/roles?locale=de`,
+    );
     roleStore = data;
     DataStore.update(`wov-roles`, roleStore);
     DataStore.write(`wov-roles`);
@@ -35,8 +36,9 @@ async function getRoles(): Promise<Role[]> {
 
 export async function autocomplete(interaction: AutocompleteInteraction) {
   const focusedOption = interaction.options.getFocused(true);
+  const searchTerm = focusedOption.value.toLowerCase();
   let choices = (await getRoles())
-    .filter((r) => r.name.startsWith(focusedOption.value))
+    .filter((r) => r.name.toLowerCase().startsWith(searchTerm))
     .slice(0, 24)
     .map((r) => ({ name: r.name, value: r.id }));
   await interaction.respond(choices);
@@ -74,15 +76,15 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     }
   }
 
-  await interaction.reply(
-    [
-      `${bold("Name:")} ${role.name}`,
-      `${bold("Aura:")} ${role.aura}`,
-      `${bold("Team:")} ${role.team}`,
-      `${bold("Description:")} ${role.description}`,
-      bold("Available in:") +
-        " " +
-        probs.map((p) => `${p.gamemode} (${p.probability})`).join(`, `),
-    ].join(`\n`),
-  );
+  const responseEmbed = new EmbedBuilder()
+    .setTitle(role.name)
+    .setDescription(role.description)
+    .setThumbnail(role.image.url)
+    .addFields({ name: `Aura`, value: role.aura, inline: true })
+    .addFields({ name: `Team`, value: role.team, inline: true })
+    .addFields({
+      name: `Available in gamemodes`,
+      value: probs.map((p) => `${p.gamemode} (${p.probability})`).join(`, `) || `-`,
+    });
+  await interaction.reply({ embeds: [responseEmbed] });
 }
