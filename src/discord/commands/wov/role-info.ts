@@ -37,7 +37,7 @@ async function getRoles(): Promise<Role[]> {
 export async function autocomplete(interaction: AutocompleteInteraction) {
   const focusedOption = interaction.options.getFocused(true);
   const searchTerm = focusedOption.value.toLowerCase();
-  let choices = (await getRoles())
+  const choices = (await getRoles())
     .filter((r) => r.name.toLowerCase().startsWith(searchTerm))
     .slice(0, 24)
     .map((r) => ({ name: r.name, value: r.id }));

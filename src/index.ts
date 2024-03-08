@@ -7,9 +7,9 @@ dotenv.config();
 import './discord';
 
 axios.defaults.baseURL = `https://api.wolvesville.com`;
-axios.defaults.headers = {
+axios.defaults.headers.common = {
   Authorization: `Bot ${process.env.WOLVESVILLE_API_KEY}`,
-} as any;
+};
 
 const scheduler = new Scheduler();
 scheduler.loadClans().then(() => {

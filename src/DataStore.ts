@@ -1,7 +1,7 @@
 import * as fs from "fs";
 
 export class DataStore {
-  private static cache: Map<string, any> = new Map<string, any>;
+  private static cache: Map<string, unknown> = new Map<string, unknown>;
 
   public static read<T>(store: string): T {
     if (!DataStore.cache.has(store)) {

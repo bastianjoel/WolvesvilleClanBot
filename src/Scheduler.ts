@@ -31,7 +31,7 @@ export class Scheduler {
     const currentClans = DataStore.read<{ [key: string]: ClanData }>(`clans`);
 
     const { data } = await axios.get<Clan[]>(`/clans/authorized`);
-    for (let clan of data) {
+    for (const clan of data) {
       if (currentClans[clan.id]) {
         currentClans[clan.id].info = clan;
         this.clans[clan.id] = currentClans[clan.id];
@@ -67,17 +67,21 @@ export class Scheduler {
 
       if (clan.tasks) {
         for (const taskInfo of clan.tasks) {
-          const task = new TASKS[taskInfo.identifier](clanId);
-          if (taskInfo.nextRun > Date.now()) {
-            await this.runTask(clan, taskInfo.identifier, task, new Date(taskInfo.nextRun));
-          } else {
-            await this.runTask(clan, taskInfo.identifier, task);
+          if (TASKS[taskInfo.identifier]) {
+            const task = new TASKS[taskInfo.identifier](clanId);
+            if (taskInfo.nextRun > Date.now()) {
+              await this.runTask(clan, taskInfo.identifier, task, new Date(taskInfo.nextRun));
+            } else {
+              await this.runTask(clan, taskInfo.identifier, task);
+            }
           }
         }
       } else {
         for (const taskName in TASKS) {
-          const task = new TASKS[taskName](clanId);
-          await this.runTask(clan, taskName, task);
+          if (TASKS[taskName]) {
+            const task = new TASKS[taskName](clanId);
+            await this.runTask(clan, taskName, task);
+          }
         }
       }
     }
